@@ -4,14 +4,14 @@ let circleSprite;
 
 function setup() {
     createCanvas(800, 600); // Set canvas size
-    circleSprite = createSprite(width / 2, height / 2, 50, 50); // Centered circle
-    circleSprite.shapeColor = color(0, 150, 255);
-    circleSprite.draw = function() {
-        ellipse(0, 0, 50, 50);
-    };
+
 }
 
 function draw() {
     background(220);
-    drawSprites();
+  fill(0, 150, 255); // Circle color
+  noStroke();
+  ellipse(width / 2, height / 2, 50, 50); // Centered circle
 }
+
+
