@@ -1,6 +1,6 @@
-import p5 from 'p5';
-import 'p5/lib/addons/p5.sound.js';
-import 'p5.play';
+//import p5 from 'p5';
+//import 'p5/lib/addons/p5.sound.js';
+//import 'p5.play';
 
 
 
