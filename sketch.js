@@ -1,132 +1,113 @@
-//import p5 from 'p5';
-//import 'p5/lib/addons/p5.sound.js';
-//import 'p5.play';
+import p5 from 'p5';
 
+const sketch = (p) => {
+  let circles = [];
 
+  class Circle {
+    constructor(x, y, size, vx, vy) {
+      this.x = x;
+      this.y = y;
+      this.size = size;
+      this.vx = vx;
+      this.vy = vy;
+    }
 
-let circles = []; // Array to hold circles
+    move() {
+      this.x += this.vx;
+      this.y += this.vy;
+    }
 
-function setup() {
-  createCanvas(800, 600);
+    checkEdges() {
+      if (this.x - this.size / 2 < 0 || this.x + this.size / 2 > p.width) {
+        this.vx *= -1;
+      }
+      if (this.y - this.size / 2 < 0 || this.y + this.size / 2 > p.height) {
+        this.vy *= -1;
+      }
+    }
 
-  circles.push(new Circle(4* width / 5, 4* height / 5, 50, -5, 3));
-  circles.push(new Circle(width / 4, height / 4, 50, 0, 0));
-  circles.push(new Circle(width / 2, height / 2, 50, 0, 0));
-  circles.push(new Circle(width / 3, height / 3, 50, 0, 0));
-}
+    display() {
+      p.fill(0, 150, 255);
+      p.noStroke();
+      p.ellipse(this.x, this.y, this.size, this.size);
+    }
 
-function draw() {
-  background(220);
+    checkForces(other) {
+      const dx = other.x - this.x;
+      const dy = other.y - this.y;
+      const distance = Math.sqrt(dx * dx + dy * dy) || 1e-6;
 
-  // Update and display all circles
-  for (let c of circles) {
-    c.move();
-    c.checkEdges();
-  }
+      const force = 10 / distance;
 
-  // Check collisions between all pairs of circles
-  for (let i = 0; i < circles.length; i++) {
-    for (let j = i + 1; j < circles.length; j++) {
+      const dvx = (dx / distance) * force;
+      const dvy = (dy / distance) * force;
+      this.vx += dvx;
+      this.vy += dvy;
+    }
 
-      circles[i].checkForces(circles[j]);
+    checkCollision(other) {
+      const dx = other.x - this.x;
+      const dy = other.y - this.y;
+      const distance = Math.sqrt(dx * dx + dy * dy) || 1e-6;
+      const minDist = (this.size + other.size) / 2;
 
-      circles[i].checkCollision(circles[j]);
+      if (distance < minDist) {
+        const angle = Math.atan2(dy, dx);
+        const speed1 = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+        const speed2 = Math.sqrt(other.vx * other.vx + other.vy * other.vy);
+        const dir1 = Math.atan2(this.vy, this.vx);
+        const dir2 = Math.atan2(other.vy, other.vx);
+
+        const vx1 = speed1 * Math.cos(dir1 - angle);
+        const vy1 = speed1 * Math.sin(dir1 - angle);
+        const vx2 = speed2 * Math.cos(dir2 - angle);
+        const vy2 = speed2 * Math.sin(dir2 - angle);
+
+        const vx1Final = vx2;
+        const vx2Final = vx1;
+
+        this.vx = Math.cos(angle) * vx1Final + Math.cos(angle + Math.PI / 2) * vy1;
+        this.vy = Math.sin(angle) * vx1Final + Math.sin(angle + Math.PI / 2) * vy1;
+        other.vx = Math.cos(angle) * vx2Final + Math.cos(angle + Math.PI / 2) * vy2;
+        other.vy = Math.sin(angle) * vx2Final + Math.sin(angle + Math.PI / 2) * vy2;
+
+        const overlap = minDist - distance;
+        this.x -= (overlap / 2) * Math.cos(angle);
+        this.y -= (overlap / 2) * Math.sin(angle);
+        other.x += (overlap / 2) * Math.cos(angle);
+        other.y += (overlap / 2) * Math.sin(angle);
+      }
     }
   }
 
-  for (let c of circles) {
-    c.display();
-  }
-}
+  p.setup = () => {
+    p.createCanvas(800, 600);
 
-// Circle class
-class Circle {
-  constructor(x, y, size, vx, vy) {
-    this.x = x;
-    this.y = y;
-    this.size = size;
-    this.vx = vx;
-    this.vy = vy;
-  }
+    circles.push(new Circle((4 * p.width) / 5, (4 * p.height) / 5, 50, -5, 3));
+    circles.push(new Circle(p.width / 4, p.height / 4, 50, 0, 0));
+    circles.push(new Circle(p.width / 2, p.height / 2, 50, 0, 0));
+    circles.push(new Circle(p.width / 3, p.height / 3, 50, 0, 0));
+  };
 
-  move() {
-    this.x += this.vx;
-    this.y += this.vy;
-  }
+  p.draw = () => {
+    p.background(220);
 
-  checkEdges() {
-    if (this.x - this.size / 2 < 0 || this.x + this.size / 2 > width) {
-      this.vx *= -1;
+    for (const c of circles) {
+      c.move();
+      c.checkEdges();
     }
-    if (this.y - this.size / 2 < 0 || this.y + this.size / 2 > height) {
-      this.vy *= -1;
+
+    for (let i = 0; i < circles.length; i++) {
+      for (let j = i + 1; j < circles.length; j++) {
+        circles[i].checkForces(circles[j]);
+        circles[i].checkCollision(circles[j]);
+      }
     }
-  }
 
-  display() {
-    fill(0, 150, 255);
-    noStroke();
-    ellipse(this.x, this.y, this.size, this.size);
-  }
-
-
-
-  checkForces(other) {
-   
-    let dx = other.x - this.x;
-    let dy = other.y - this.y;
-    let distance = sqrt(dx * dx + dy * dy);
-    
-    let force=10/distance
-    
-    let dvx = (dx / distance) * force;
-    let dvy = (dy / distance) * force;
-    this.vx += dvx;
-    this.vy += dvy;
-
-
-  }
-
-
-
-
-  checkCollision(other) {
-    let dx = other.x - this.x;
-    let dy = other.y - this.y;
-    let distance = sqrt(dx * dx + dy * dy);
-    let minDist = (this.size + other.size) / 2;
-
-
-  
-
-
-    if (distance < minDist) {
-      // Simple elastic collision: swap velocities along the line connecting centers
-      let angle = atan2(dy, dx);
-      let speed1 = sqrt(this.vx * this.vx + this.vy * this.vy);
-      let speed2 = sqrt(other.vx * other.vx + other.vy * other.vy);
-      let dir1 = atan2(this.vy, this.vx);
-      let dir2 = atan2(other.vy, other.vx);
-
-      let vx1 = speed1 * cos(dir1 - angle);
-      let vy1 = speed1 * sin(dir1 - angle);
-      let vx2 = speed2 * cos(dir2 - angle);
-      let vy2 = speed2 * sin(dir2 - angle);
-
-      let vx1Final = vx2;
-      let vx2Final = vx1;
-
-      this.vx = cos(angle) * vx1Final + cos(angle + HALF_PI) * vy1;
-      this.vy = sin(angle) * vx1Final + sin(angle + HALF_PI) * vy1;
-      other.vx = cos(angle) * vx2Final + cos(angle + HALF_PI) * vy2;
-      other.vy = sin(angle) * vx2Final + sin(angle + HALF_PI) * vy2;
-
-      // Separate overlapping circles
-      let overlap = minDist - distance;
-      this.x -= overlap / 2 * cos(angle);
-      this.y -= overlap / 2 * sin(angle);
-      other.x += overlap / 2 * cos(angle);
-      other.y += overlap / 2 * sin(angle);
+    for (const c of circles) {
+      c.display();
     }
-  }
-}
+  };
+};
+
+new p5(sketch);

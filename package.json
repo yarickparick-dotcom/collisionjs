@@ -1,0 +1,17 @@
+{
+  "name": "collisionjs",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sketch.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "esbuild sketch.js --bundle --outfile=dist/bundle.js --format=iife --sourcemap --tree-shaking=false",
+    "dev": "esbuild sketch.js --bundle --outfile=dist/bundle.js --format=iife --sourcemap --tree-shaking=false --watch --servedir=."
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.10"
+  },
+  "dependencies": {
+    "p5": "^2.0.5"
+  }
+}
